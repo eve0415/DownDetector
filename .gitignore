@@ -1,0 +1,9 @@
+# npm modules
+node_modules
+
+# enviroment
+.env
+database.sqlite
+
+#build
+dist
