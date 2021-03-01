@@ -3,7 +3,9 @@ node_modules
 
 # enviroment
 .env
-database.sqlite
+database.sqlite*
 
 #build
 dist
+lib
+tsconfig.tsbuildinfo

@@ -1,0 +1,43 @@
+{
+  "name": "downdetector",
+  "version": "1.0.0",
+  "description": "Fetch service status",
+  "author": "eve0415 <40632436+eve0415@users.noreply.github.com>",
+  "homepage": "https://github.com/eve0415/DownDetector#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eve0415/DownDetector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eve0415/DownDetector/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "lint": "npx eslint --ext ts --fix src/**/*",
+    "build": "tsc -b",
+    "watch": "tsc -w",
+    "start": "node -r dotenv/config dist/index.js",
+    "test": "nodemon --config nodemon.json -r dotenv/config src/index.ts"
+  },
+  "dependencies": {
+    "bufferutil": "^4.0.3",
+    "database": "^1.0.0",
+    "discord.js": "discordjs/discord.js#master",
+    "erlpack": "discord/erlpack",
+    "statuspageapi": "^1.0.0",
+    "utf-8-validate": "^5.0.4",
+    "zlib-sync": "^0.1.7"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.7"
+  }
+}

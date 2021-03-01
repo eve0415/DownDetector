@@ -1,0 +1,37 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "description": "A database handler for DownDetector and Bot",
+  "author": "eve0415 <40632436+eve0415@users.noreply.github.com>",
+  "homepage": "https://github.com/eve0415/DownDetector#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eve0415/DownDetector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eve0415/DownDetector/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "lint": "npx eslint --ext ts --fix src/**/*",
+    "build": "tsc -b",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.31"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^5.4.1",
+    "better-sqlite3": "^7.1.2",
+    "discord.js": "discordjs/discord.js#master"
+  }
+}

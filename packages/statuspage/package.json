@@ -1,0 +1,31 @@
+{
+  "name": "statuspageapi",
+  "version": "1.0.0",
+  "description": "A wrapper for statuspage.io",
+  "author": "eve0415 <40632436+eve0415@users.noreply.github.com>",
+  "homepage": "https://github.com/eve0415/DownDetector#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eve0415/DownDetector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eve0415/DownDetector/issues"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "lint": "npx eslint --ext ts --fix src/**/*",
+    "build": "tsc -b",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
