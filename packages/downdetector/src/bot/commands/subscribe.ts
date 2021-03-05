@@ -29,7 +29,7 @@ export default class extends Command {
 
     private async showSubscribed(message: Message) {
         const subscribed = await message.guild?.getSubscribed();
-        const count = subscribed?.map(s => s.status).reduce((sum, element) => sum.concat(element));
+        const count = subscribed?.map(s => s.status).reduce((sum, element) => sum.concat(element), []);
         const embed = new MessageEmbed()
             .setTitle(`${count?.length ? `This server is watching ${count?.length} services` : 'This server is not watching any services'}`)
             .setColor('BLUE')
@@ -52,7 +52,12 @@ export default class extends Command {
 
     private async unSubscribe(message: Message, subscribe: Subscribe, status: Status) {
         subscribe.status = subscribe.status.filter(s => s.id !== status.id);
-        await subscribe.save();
+        if (subscribe.status.length) {
+            await subscribe.save();
+        } else {
+            await subscribe.remove();
+            this.instance.statusManager.removeStatus(status.id);
+        }
         message.channel.send('Successfully unsubscribed');
     }
 

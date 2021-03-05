@@ -32,4 +32,13 @@ export class StatusManager extends Collection<string, StatusPage> {
         // If we can't find from anywhere, return nil
         return null;
     }
+
+    public async removeStatus(id: string): Promise<void> {
+        const status = await Status.findOne({ relations: ['subscribed'], where: [{ id: id }] });
+        if (!status?.subscribed.length && this.has(id)) {
+            this.get(id)?.clear();
+            this.delete(id);
+            await status?.remove();
+        }
+    }
 }
