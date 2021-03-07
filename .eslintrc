@@ -276,7 +276,6 @@
         ],
         "require-await": "error",
         "rest-spread-spacing": "error",
-        "semi": "error",
         "semi-spacing": "error",
         "semi-style": [
             "error",
