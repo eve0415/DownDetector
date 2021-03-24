@@ -5,11 +5,11 @@ import { Bot } from './bot';
 export class DownDetector {
     protected database: Database;
     public statusManager: StatusManager;
-    protected bot: Bot;
+    public bot: Bot;
 
     constructor() {
         this.database = new Database();
-        this.statusManager = new StatusManager();
+        this.statusManager = new StatusManager(this);
         this.bot = new Bot(this);
     }
 
@@ -20,10 +20,9 @@ export class DownDetector {
 
     private async init() {
         await this.database.connect();
-        await Promise.all([
-            this.statusManager.init(),
-            this.bot.start(),
-        ]);
+        await this.statusManager.init();
+        await this.bot.start();
+        this.statusManager.postInit();
     }
 }
 

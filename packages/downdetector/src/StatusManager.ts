@@ -1,25 +1,30 @@
 import { Status } from 'database';
 import { Collection } from 'discord.js';
-import { Util } from 'statuspageapi';
+import { IIncident, Incident, IncidentStatus, Maintenance, MaintenanceStatus, Util } from 'statuspageapi';
+import { DownDetector } from '.';
 import { StatusPage } from './Status';
 import { PresetStatus } from './preset';
 
 export class StatusManager extends Collection<string, StatusPage> {
-    public async init(): Promise<void> {
-        const status = await Status.find();
-        await Promise.all(status.map(s => this.set(s.id, new StatusPage(s.id))));
+    private readonly instance: DownDetector;
+
+    public constructor(instance: DownDetector) {
+        super();
+        this.instance = instance;
     }
 
-    public async isCachedStatus(str: string): Promise<boolean> {
-        // Try to retrieve from database or presets
-        return !!(await Status.findOne({ id: str })
-            ?? await Status.findOne({ name: str })
-            ?? PresetStatus.find(s => s.id === str || s.name === str));
+    public async init(): Promise<void> {
+        const status = await Status.find();
+        await Promise.all(status.map(s => this.set(s.id, new StatusPage(s.id).on('statusUpdate', (type, base, incident) => this.onStatusChange(type, base, incident)))));
+    }
+
+    public postInit(): void {
+        this.forEach(s => s.init());
     }
 
     public async searchStatus(str: string): Promise<Status | null> {
         // Try to retrieve from database
-        const fromCache = await Status.findOne({ relations: ['subscribed'], where: [{ id: str }, { name: str }] });
+        const fromCache = await Status.findOne({ where: [{ id: str }, { name: str }] });
         if (fromCache) return fromCache;
         // Try to retrieve from presets
         const fromPreset = PresetStatus.find(s => s.id === str || s.name === str);
@@ -33,12 +38,21 @@ export class StatusManager extends Collection<string, StatusPage> {
         return null;
     }
 
+    public addStatus(status: Status): void {
+        if (this.has(status.id)) return;
+        this.set(status.id, new StatusPage(status.id).on('statusUpdate', (type, base, incident) => this.onStatusChange(type, base, incident))).init();
+    }
+
     public async removeStatus(id: string): Promise<void> {
-        const status = await Status.findOne({ relations: ['subscribed'], where: [{ id: id }] });
+        const status = await Status.findOne({ id: id });
         if (!status?.subscribed.length && this.has(id)) {
             this.get(id)?.clear();
             this.delete(id);
             await status?.remove();
         }
+    }
+
+    private onStatusChange(status: IncidentStatus | MaintenanceStatus, base: Incident | Maintenance, incident: IIncident) {
+        this.instance.bot.status.updateStatus(status, base, incident);
     }
 }

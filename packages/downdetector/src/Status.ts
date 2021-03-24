@@ -13,12 +13,13 @@ import {
 } from 'statuspageapi';
 
 interface StatusEvents {
-    'statusUpdate': [IncidentStatus | MaintenanceStatus, IIncident]
+    'statusUpdate': [IncidentStatus | MaintenanceStatus, Incident | Maintenance, IIncident]
 }
 
 declare module 'events' {
     interface EventEmitter {
         emit<K extends keyof StatusEvents>(event: K, ...args: StatusEvents[K]): boolean
+        on<K extends keyof StatusEvents>(event: K, listener: (...args: StatusEvents[K]) => void): this
     }
 }
 
@@ -32,7 +33,7 @@ export class StatusPage extends Emitter {
 
     private checkUpdate!: NodeJS.Timeout;
     private readonly api: StatusPageApi;
-    private readonly inicidents: Collection<string, IIncident> = new Collection();
+    private readonly incidents: Collection<string, IIncident> = new Collection();
     private readonly maintenance: Collection<string, IMaintenance> = new Collection();
 
     public constructor(id: string) {
@@ -46,63 +47,71 @@ export class StatusPage extends Emitter {
     }
 
     private fetchUpdate(): void {
-        this.checkUpdate = setInterval(() => this.update(), 60000);
+        // this.checkUpdate = setInterval(() => this.update(), 60000);
+        this.checkUpdate = setInterval(() => this.update(), 20000);
     }
 
     private async update() {
+        this.lastUpdate = new Date;
         if (this.ongoingIncidents) {
-            const res = await this.getUnresolvedIncindents();
-            if (!res.incidents) {
-                const allIncindents = await this.getAllIncindents();
-                this.inicidents.forEach(incident => {
-                    const resolved = allIncindents.incidents.find(i => i.id === incident.id);
-                    if (resolved) super.emit('statusUpdate', incident.status, resolved);
+            const res = await this.getUnresolvedIncidents();
+            if (!res.incidents.length) {
+                const allIncidents = await this.getAllIncidents();
+                this.incidents.forEach(incident => {
+                    const resolved = allIncidents.incidents.find(i => i.id === incident.id);
+                    if (resolved) super.emit('statusUpdate', incident.incident_updates[0].status, allIncidents, resolved);
                 });
                 this.ongoingIncidents = false;
-                this.inicidents.clear();
+                this.incidents.clear();
             } else {
-                for (const incident of res.incidents) {
-                    const cached = this.inicidents.get(incident.id);
-                    if (!cached) {
-                        super.emit('statusUpdate', incident.status, incident);
-                    }
-                    if (incident !== cached) {
-                        super.emit('statusUpdate', incident.status, incident);
-                        this.inicidents.delete(incident.id);
-                    }
-                    this.inicidents.set(incident.id, incident);
+                const oldIncidents = this.incidents.filter(i => res.incidents.findIndex(r => r.id === i.id) === -1);
+                if (oldIncidents.size) {
+                    const allIncidents = await this.getAllIncidents();
+                    oldIncidents.forEach(incident => {
+                        const resolved = allIncidents.incidents.find(i => i.id === incident.id);
+                        if (resolved) super.emit('statusUpdate', incident.incident_updates[0].status, allIncidents, resolved);
+                    });
                 }
+                res.incidents.forEach(incident => {
+                    const cached = this.incidents.get(incident.id);
+                    if (!cached || incident.incident_updates.length !== cached?.incident_updates.length) {
+                        super.emit('statusUpdate', incident.status, res, incident);
+                        this.incidents.delete(incident.id);
+                    }
+                    this.incidents.set(incident.id, incident);
+                });
             }
-        } else if (this.ongoingMaintenance) {
+        }
+
+        if (this.ongoingMaintenance) {
             const res = await this.getActiveMaintenances();
-            if (!res.scheduled_maintenances) {
+            if (!res.scheduled_maintenances.length) {
                 const allMaintenances = await this.getAllMaintenances();
-                this.inicidents.forEach(maintenance => {
+                this.incidents.forEach(maintenance => {
                     const resolved = allMaintenances.scheduled_maintenances.find(m => m.id === maintenance.id);
-                    if (resolved) super.emit('statusUpdate', maintenance.status, resolved);
+                    if (resolved) super.emit('statusUpdate', maintenance.incident_updates[0].status, res, resolved);
                 });
                 this.ongoingIncidents = false;
-                this.inicidents.clear();
+                this.incidents.clear();
             } else {
-                for (const maintenance of res.scheduled_maintenances) {
+                res.scheduled_maintenances.forEach(maintenance => {
                     const cached = this.maintenance.get(maintenance.id);
-                    if (!cached) {
-                        super.emit('statusUpdate', maintenance.status, maintenance);
+                    if (!cached || maintenance.incident_updates.length !== cached?.incident_updates.length) {
+                        super.emit('statusUpdate', maintenance.status, res, maintenance);
+                        this.incidents.delete(maintenance.id);
                     }
-                    if (maintenance !== cached) {
-                        super.emit('statusUpdate', maintenance.status, maintenance);
-                        this.inicidents.delete(maintenance.id);
-                    }
-                    this.inicidents.set(maintenance.id, maintenance);
-                }
+                    this.incidents.set(maintenance.id, maintenance);
+                });
             }
-        } else {
+        }
+
+        if (!this.ongoingIncidents && !this.ongoingMaintenance) {
             const res = await this.getSummary();
             this.components = res.components;
-            res.incidents.map(i => this.inicidents.set(i.id, i));
+            res.incidents.map(i => this.incidents.set(i.id, i));
             res.scheduled_maintenances.map(m => {
                 if (!this.maintenance.has(m.id)) {
-                    super.emit('statusUpdate', m.status, m);
+                    super.emit('statusUpdate', m.status, res, m);
                 } else if (this.maintenance.get(m.id) !== m) {
                     this.maintenance.delete(m.id);
                 }
@@ -110,13 +119,19 @@ export class StatusPage extends Emitter {
             });
             this.ongoingIncidents = !!res.incidents.length;
             this.hasScheduledMaintenance = !!res.scheduled_maintenances.length;
-        }
 
-        if (this.hasScheduledMaintenance) {
-            this.maintenance.forEach(m => {
-                if (m.status !== 'scheduled') this.ongoingMaintenance = true;
-                super.emit('statusUpdate', m.status, m);
-            });
+            if (this.ongoingIncidents) {
+                this.incidents.forEach(i => {
+                    this.ongoingIncidents = true;
+                    super.emit('statusUpdate', i.status, res, i);
+                });
+            }
+            if (this.hasScheduledMaintenance) {
+                this.maintenance.forEach(m => {
+                    if (m.status !== 'scheduled') this.ongoingMaintenance = true;
+                    super.emit('statusUpdate', m.status, res, m);
+                });
+            }
         }
     }
 
@@ -138,12 +153,12 @@ export class StatusPage extends Emitter {
     }
     */
 
-    public getAllIncindents(): Promise<Incident> {
-        return this.api.getAllIncindents();
+    public getAllIncidents(): Promise<Incident> {
+        return this.api.getAllIncidents();
     }
 
-    public getUnresolvedIncindents(): Promise<Incident> {
-        return this.api.getUnresolvedIncindents();
+    public getUnresolvedIncidents(): Promise<Incident> {
+        return this.api.getUnresolvedIncidents();
     }
 
     public getAllMaintenances(): Promise<Maintenance> {

@@ -1,6 +1,6 @@
 import type { Snowflake, TextChannel } from 'discord.js';
 import { BaseEntity, Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Status } from './Status';
+import { Status } from '.';
 
 @Entity()
 export class Subscribe extends BaseEntity {

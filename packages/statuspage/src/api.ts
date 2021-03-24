@@ -37,12 +37,12 @@ export class StatusPageApi {
         return new Component(response.data);
     }
 
-    public async getAllIncindents(): Promise<Incident> {
+    public async getAllIncidents(): Promise<Incident> {
         const response = await axios.get<RIncident>(`${this.baseUrl}/incidents.json`);
         return new Incident(response.data);
     }
 
-    public async getUnresolvedIncindents(): Promise<Incident> {
+    public async getUnresolvedIncidents(): Promise<Incident> {
         const response = await axios.get<RIncident>(`${this.baseUrl}/incidents/unresolved.json`);
         return new Incident(response.data);
     }
