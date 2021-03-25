@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, PermissionResolvable, TextChannel } from 'discord.js';
+import { Message, MessageEmbed, PermissionResolvable, Permissions, TextChannel } from 'discord.js';
 import { Base } from '.';
 import { Bot } from '..';
 
@@ -6,7 +6,7 @@ type CommandOptions = Readonly<{
     alias?: string[]
     description: string
     usage: string
-    requiredPerm?: PermissionResolvable
+    additionalPerm?: PermissionResolvable
     guildOnly?: boolean
     ownerOnly?: boolean
 }>;
@@ -25,9 +25,11 @@ export abstract class Command extends Base {
         this.alias = options.alias ?? [];
         this.description = options.description;
         this.usage = options.usage;
-        this.requiredPerm = options.requiredPerm ?? ['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'];
         this.guildOnly = options?.ownerOnly ?? false;
         this.ownerOnly = options?.ownerOnly ?? false;
+
+        const defaultPerms = new Permissions(['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS']).toArray();
+        this.requiredPerm = options.additionalPerm ? new Permissions(options.additionalPerm).toArray().concat(defaultPerms) : defaultPerms;
     }
 
     public abstract run(message: Message, args: string[]): void;

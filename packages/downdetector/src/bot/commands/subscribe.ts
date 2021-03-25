@@ -14,6 +14,7 @@ export default class extends Command {
             usage: 'subscribe [service name | service ID | list] [channel]',
             alias: ['sub'],
             guildOnly: true,
+            additionalPerm: 'READ_MESSAGE_HISTORY',
         });
         this.instance = bot.instance;
     }
