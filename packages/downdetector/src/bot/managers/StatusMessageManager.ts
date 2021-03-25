@@ -1,6 +1,6 @@
 import { Incident as DBIncident, Notify, Status } from 'database';
 import { MessageEmbed, TextChannel } from 'discord.js';
-import { IncidentStatus, MaintenanceStatus, IIncident, Incident, Maintenance, Indicator } from 'statuspageapi';
+import { IIncident, Incident, Indicator, Maintenance } from 'statuspageapi';
 import { Bot } from '..';
 
 export class StatusMessageManager {
@@ -10,7 +10,7 @@ export class StatusMessageManager {
         this.bot = bot;
     }
 
-    public async updateStatus(_status: IncidentStatus | MaintenanceStatus, base: Incident | Maintenance, incident: IIncident): Promise<void> {
+    public async updateStatus(base: Incident | Maintenance, incident: IIncident): Promise<void> {
         const DBStatus = await Status.findOne({ id: base.id });
         const incidentCache = DBStatus?.incidents.find(i => i.id === incident.id) ?? await new DBIncident({ id: incident.id }).save();
         await incidentCache.reload();
@@ -18,22 +18,31 @@ export class StatusMessageManager {
         const todo = compatChannel?.map(async c => {
             const cached = incidentCache.notified.find(n => n.channel === c?.id);
             try {
-                if (cached) {
-                    const message = await (this.bot.channels.resolve(cached.channel) as TextChannel).messages.fetch(cached.message);
-                    return message.edit(this.createStatusMessage(base, incident));
+                const message = cached
+                    ? await (this.bot.channels.resolve(cached.channel) as TextChannel).messages.fetch(cached.message)
+                    : await (c as TextChannel).send(this.createStatusMessage(base, incident));
+                if (cached) message.edit(this.createStatusMessage(base, incident));
+
+                if (incident.incident_updates[0].status === 'resolved') {
+                    await Notify.findOne({ message: message.id }).then(n => n?.remove());
+                    return incidentCache.notified.filter(n => n.message !== message.id);
+                } else {
+                    return incidentCache.notified.push(await new Notify({ channel: message.channel.id, message: message.id }).save());
                 }
-                const message = await (c as TextChannel).send(this.createStatusMessage(base, incident));
-                return incidentCache.notified.push(await new Notify({ channel: message.channel.id, message: message.id }).save());
             } catch (e) {
                 return console.error(e);
             }
         });
         if (todo) await Promise.all(todo);
 
-        if (!DBStatus?.incidents.find(i => i.id === incidentCache.id)) DBStatus?.incidents.push(incidentCache);
-
+        if (!incidentCache.notified.length) {
+            DBStatus?.incidents.filter(i => i.id !== incidentCache.id);
+            await incidentCache.remove();
+        } else {
+            if (!DBStatus?.incidents.find(i => i.id === incidentCache.id)) DBStatus?.incidents.push(incidentCache);
+            await incidentCache.save();
+        }
         await DBStatus?.save();
-        await incidentCache.save();
     }
 
     private createStatusMessage(base: Incident | Maintenance, incident: IIncident) {

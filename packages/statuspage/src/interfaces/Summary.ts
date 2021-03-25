@@ -1,4 +1,4 @@
-import { IComponent, IIncident, IMaintenance, Page, RPage, IStatus } from '.';
+import { IComponent, IIncident, IMaintenance, IStatus, Page, RPage } from '.';
 
 export interface RSummary extends RPage {
     components: IComponent[];

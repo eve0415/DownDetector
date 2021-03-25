@@ -1,4 +1,4 @@
-import { PermissionResolvable, Message, TextChannel, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed, PermissionResolvable, TextChannel } from 'discord.js';
 import { Base } from '.';
 import { Bot } from '..';
 

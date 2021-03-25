@@ -1,19 +1,18 @@
 import { EventEmitter as Emitter } from 'events';
+import { Status } from 'database';
 import { Collection } from 'discord.js';
 import {
     IComponent,
     IIncident,
     IMaintenance,
     Incident,
-    IncidentStatus,
     Maintenance,
-    MaintenanceStatus,
     StatusPageApi,
     Summary,
 } from 'statuspageapi';
 
 interface StatusEvents {
-    'statusUpdate': [IncidentStatus | MaintenanceStatus, Incident | Maintenance, IIncident]
+    'statusUpdate': [Incident | Maintenance, IIncident]
 }
 
 declare module 'events' {
@@ -46,7 +45,15 @@ export class StatusPage extends Emitter {
         this.fetchUpdate();
     }
 
-    private fetchUpdate(): void {
+    private async fetchUpdate(): Promise<void> {
+        const DBStatus = await Status.findOne({ id: this.id });
+        if (DBStatus?.incidents.length) {
+            const allIncidents = await this.getAllIncidents();
+            DBStatus?.incidents.forEach(incident => {
+                const found = allIncidents.incidents.find(i => i.id === incident.id);
+                if (found) super.emit('statusUpdate', allIncidents, found);
+            });
+        }
         // this.checkUpdate = setInterval(() => this.update(), 60000);
         this.checkUpdate = setInterval(() => this.update(), 20000);
     }
@@ -59,7 +66,7 @@ export class StatusPage extends Emitter {
                 const allIncidents = await this.getAllIncidents();
                 this.incidents.forEach(incident => {
                     const resolved = allIncidents.incidents.find(i => i.id === incident.id);
-                    if (resolved) super.emit('statusUpdate', incident.incident_updates[0].status, allIncidents, resolved);
+                    if (resolved) super.emit('statusUpdate', allIncidents, resolved);
                 });
                 this.ongoingIncidents = false;
                 this.incidents.clear();
@@ -69,13 +76,13 @@ export class StatusPage extends Emitter {
                     const allIncidents = await this.getAllIncidents();
                     oldIncidents.forEach(incident => {
                         const resolved = allIncidents.incidents.find(i => i.id === incident.id);
-                        if (resolved) super.emit('statusUpdate', incident.incident_updates[0].status, allIncidents, resolved);
+                        if (resolved) super.emit('statusUpdate', allIncidents, resolved);
                     });
                 }
                 res.incidents.forEach(incident => {
                     const cached = this.incidents.get(incident.id);
                     if (!cached || incident.incident_updates.length !== cached?.incident_updates.length) {
-                        super.emit('statusUpdate', incident.status, res, incident);
+                        super.emit('statusUpdate', res, incident);
                         this.incidents.delete(incident.id);
                     }
                     this.incidents.set(incident.id, incident);
@@ -89,7 +96,7 @@ export class StatusPage extends Emitter {
                 const allMaintenances = await this.getAllMaintenances();
                 this.incidents.forEach(maintenance => {
                     const resolved = allMaintenances.scheduled_maintenances.find(m => m.id === maintenance.id);
-                    if (resolved) super.emit('statusUpdate', maintenance.incident_updates[0].status, res, resolved);
+                    if (resolved) super.emit('statusUpdate', res, resolved);
                 });
                 this.ongoingIncidents = false;
                 this.incidents.clear();
@@ -97,7 +104,7 @@ export class StatusPage extends Emitter {
                 res.scheduled_maintenances.forEach(maintenance => {
                     const cached = this.maintenance.get(maintenance.id);
                     if (!cached || maintenance.incident_updates.length !== cached?.incident_updates.length) {
-                        super.emit('statusUpdate', maintenance.status, res, maintenance);
+                        super.emit('statusUpdate', res, maintenance);
                         this.incidents.delete(maintenance.id);
                     }
                     this.incidents.set(maintenance.id, maintenance);
@@ -111,7 +118,7 @@ export class StatusPage extends Emitter {
             res.incidents.map(i => this.incidents.set(i.id, i));
             res.scheduled_maintenances.map(m => {
                 if (!this.maintenance.has(m.id)) {
-                    super.emit('statusUpdate', m.status, res, m);
+                    super.emit('statusUpdate', res, m);
                 } else if (this.maintenance.get(m.id) !== m) {
                     this.maintenance.delete(m.id);
                 }
@@ -123,13 +130,13 @@ export class StatusPage extends Emitter {
             if (this.ongoingIncidents) {
                 this.incidents.forEach(i => {
                     this.ongoingIncidents = true;
-                    super.emit('statusUpdate', i.status, res, i);
+                    super.emit('statusUpdate', res, i);
                 });
             }
             if (this.hasScheduledMaintenance) {
                 this.maintenance.forEach(m => {
                     if (m.status !== 'scheduled') this.ongoingMaintenance = true;
-                    super.emit('statusUpdate', m.status, res, m);
+                    super.emit('statusUpdate', res, m);
                 });
             }
         }

@@ -1,15 +1,15 @@
 import axios from 'axios';
 import {
-    Summary,
+    Component,
+    Incident,
+    Maintenance,
+    RComponent,
+    RIncident,
+    RMaintenance,
+    RStatus,
     RSummary,
     Status,
-    RStatus,
-    Component,
-    RComponent,
-    Incident,
-    RIncident,
-    Maintenance,
-    RMaintenance,
+    Summary,
 } from '.';
 
 export class StatusPageApi {
