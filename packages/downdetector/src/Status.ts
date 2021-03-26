@@ -117,11 +117,7 @@ export class StatusPage extends Emitter {
             this.components = res.components;
             res.incidents.map(i => this.incidents.set(i.id, i));
             res.scheduled_maintenances.map(m => {
-                if (!this.maintenance.has(m.id)) {
-                    super.emit('statusUpdate', res, m);
-                } else if (this.maintenance.get(m.id) !== m) {
-                    this.maintenance.delete(m.id);
-                }
+                if (this.maintenance.get(m.id) !== m) this.maintenance.delete(m.id);
                 return this.maintenance.set(m.id, m);
             });
             this.ongoingIncidents = !!res.incidents.length;

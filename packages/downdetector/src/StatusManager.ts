@@ -40,7 +40,9 @@ export class StatusManager extends Collection<string, StatusPage> {
 
     public addStatus(status: Status): void {
         if (this.has(status.id)) return;
-        this.set(status.id, new StatusPage(status.id).on('statusUpdate', (base, incident) => this.onStatusChange(base, incident))).init();
+        const newStatus = new StatusPage(status.id).on('statusUpdate', (base, incident) => this.onStatusChange(base, incident));
+        newStatus.init();
+        this.set(status.id, newStatus);
     }
 
     public async removeStatus(id: string): Promise<void> {

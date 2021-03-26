@@ -13,7 +13,7 @@ export class Notify extends BaseEntity {
     @Column()
     public channel!: Snowflake;
 
-    @Column()
+    @Column({ unique: true })
     public message!: Snowflake;
 
     public constructor(data?: { channel: Snowflake, message: Snowflake }) {
