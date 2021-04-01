@@ -21,7 +21,6 @@
     "node": ">=14"
   },
   "scripts": {
-    "lint": "npx eslint --ext ts --fix src/**/*",
     "clean": "rimraf lib && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
