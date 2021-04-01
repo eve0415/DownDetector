@@ -1,5 +1,5 @@
 import { Database } from 'database';
-import { getLogger } from 'log4js';
+import { getLogger, shutdown } from 'log4js';
 import { StatusManager } from './StatusManager';
 import { Bot } from './bot';
 
@@ -24,10 +24,33 @@ export class DownDetector {
     }
 
     private async init() {
+        this.errorHandler();
         await this.database.connect();
         await this.statusManager.init();
         await this.bot.start();
         this.statusManager.postInit();
+    }
+
+    private shutdown() {
+        this.logger.info('Shutting down system...');
+        shutdown();
+        process.exit();
+    }
+
+    private errorHandler() {
+        ['SIGTERM', 'SIGINT', 'uncaughtException', 'unhandledRejection']
+            .forEach(signal => process.on(signal, async e => {
+                if (e === 'unhandledRejection') {
+                    this.logger.error('Unexpected error occured', e);
+                    await this.bot.sendError(e);
+                    return;
+                }
+                if (!(e === 'SIGINT' || e === 'SIGTERM')) {
+                    this.logger.fatal('Unexpected error occured', e);
+                    await this.bot.sendError(e);
+                }
+                this.shutdown();
+            }));
     }
 }
 

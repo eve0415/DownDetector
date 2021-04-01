@@ -1,5 +1,5 @@
 import './extends';
-import { Client } from 'discord.js';
+import { Client, Message, TextChannel } from 'discord.js';
 import { getLogger } from 'log4js';
 import { CommandManager, EventManager, StatusMessageManager } from './managers';
 import { DownDetector } from '../DownDetector';
@@ -35,5 +35,9 @@ export class Bot extends Client {
             this.command.registerAll(),
         ]);
         this.logger.info('Initialize complete');
+    }
+
+    public sendError(e: unknown): Promise<Message> {
+        return (this.channels.cache.get('827163688057569281') as TextChannel).send({ embed: { title: 'Error', description: e as string } });
     }
 }
