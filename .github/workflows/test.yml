@@ -27,7 +27,7 @@ jobs:
           yarn bootstrap
 
       - name: Build
-        run: yarn Build
+        run: yarn build
 
       - name: Run ESLint
         run: yarn lint
