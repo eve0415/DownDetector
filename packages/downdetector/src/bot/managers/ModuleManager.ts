@@ -1,6 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 import { Collection } from 'discord.js';
+import { getLogger, Logger } from 'log4js';
 import { Bot } from '..';
 
 export type ModuleData<K, V> = Readonly<{
@@ -9,15 +10,17 @@ export type ModuleData<K, V> = Readonly<{
 }>;
 
 export abstract class ModuleManager<K, V> extends Collection<K, V> {
+    protected readonly logger: Logger;
     protected readonly bot: Bot;
 
-    public constructor(bot: Bot) {
+    public constructor(bot: Bot, loggerName: string) {
         super();
+        this.logger = getLogger(loggerName);
         this.bot = bot;
     }
 
     public register(data: ModuleData<K, V>): V {
-        if (this.has(data.key)) console.error(`Failed to register ${data.key} `, `${data.key} is used`);
+        if (this.has(data.key)) this.logger.error(`Failed to register ${data.key} `, `${data.key} is used`);
         this.set(data.key, data.value);
 
         return data.value;
@@ -25,7 +28,7 @@ export abstract class ModuleManager<K, V> extends Collection<K, V> {
 
     public unregister(key: K): V {
         const value = this.get(key) as V;
-        if (!value || !this.has(key)) console.error(`Failed to unregister ${key} `, `${key} does not exist.`);
+        if (!value || !this.has(key)) this.logger.error(`Failed to unregister ${key} `, `${key} does not exist.`);
         this.delete(key);
         return value;
     }

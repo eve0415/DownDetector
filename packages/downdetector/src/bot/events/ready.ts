@@ -7,6 +7,6 @@ export default class extends Event {
     }
 
     public run(): void {
-        console.info('[BOT] Bot has succesfully logged in and is Ready.');
+        this.logger.info('Bot has succesfully logged in and is Ready.');
     }
 }

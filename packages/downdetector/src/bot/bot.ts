@@ -1,9 +1,12 @@
 import './extends';
 import { Client } from 'discord.js';
+import { getLogger } from 'log4js';
 import { CommandManager, EventManager, StatusMessageManager } from './managers';
 import { DownDetector } from '../DownDetector';
 
 export class Bot extends Client {
+    private readonly logger = getLogger('BOT');
+
     public readonly instance: DownDetector;
     private readonly event: EventManager;
     public readonly command: CommandManager;
@@ -15,22 +18,22 @@ export class Bot extends Client {
             intents: ['GUILDS', 'GUILD_MESSAGES'],
         });
         this.instance = instance;
-        this.event = new EventManager(this);
-        this.command = new CommandManager(this);
+        this.event = new EventManager(this, 'EventManager');
+        this.command = new CommandManager(this, 'CommandManager');
         this.status = new StatusMessageManager(this);
     }
 
     public async start(): Promise<void> {
-        await this.init().catch(console.error);
-        await this.login().catch(console.error);
+        this.logger.info('Initializing...');
+        await this.init().catch(e => this.logger.error(e));
+        await this.login().catch(e => this.logger.error(e));
     }
 
     private async init() {
-        console.log('[System] Pre Initializing...');
         await Promise.all([
             this.event.registerAll(),
             this.command.registerAll(),
         ]);
-        console.log('[System] Pre Initialize complete');
+        this.logger.info('Initialize complete');
     }
 }

@@ -10,7 +10,7 @@ export default class extends Command {
 
     public constructor(bot: Bot) {
         super(bot, 'subscribe', {
-            description: 'Subscribe to notifies you when some services are down!',
+            description: 'Subscribe to notify you when some services are down!',
             usage: 'subscribe [service name | service ID | list] [channel]',
             alias: ['sub'],
             guildOnly: true,
@@ -20,6 +20,7 @@ export default class extends Command {
     }
 
     public run(message: Message, args: string[]): undefined | Promise<void | Message> {
+        this.logger.trace('Running comand');
         if (!args.length) return this.showSubscribed(message);
         if (args.length > 2) return message.channel.send('Too many arguments');
         const channel = args.length === 2 ? this.getChannelFromId(args[1]) : message.channel as TextChannel;
@@ -81,7 +82,7 @@ export default class extends Command {
                 const perms = channel.permissionsFor(this.bot.user ?? '')?.serialize();
                 const embed = new MessageEmbed()
                     .setTitle('No permission')
-                    .setDescription(`Please give proper permissions to ${this.bot.user?.toString()}.\n${perms?.VIEW_CHANNEL ? '✅' : '❌'} View Channel\n${perms?.SEND_MESSAGES ? '✅' : '❌'} Send Messages\n${perms?.EMBED_LINKS ? '✅' : '❌'} Embed Links`)
+                    .setDescription(`Please give proper permissions to ${this.bot.user?.toString()}.\n${perms?.VIEW_CHANNEL ? '✅' : '❌'} View Channel\n${perms?.SEND_MESSAGES ? '✅' : '❌'} Send Messages\n${perms?.EMBED_LINKS ? '✅' : '❌'} Embed Links\n${perms?.READ_MESSAGE_HISTORY ? '✅' : '❌'} Read Message History`)
                     .setColor('RED');
                 message.channel.send(embed);
                 return false;

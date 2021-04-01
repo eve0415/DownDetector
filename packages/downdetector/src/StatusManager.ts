@@ -1,11 +1,13 @@
 import { Status } from 'database';
 import { Collection } from 'discord.js';
+import { getLogger } from 'log4js';
 import { IIncident, Incident, Maintenance, Util } from 'statuspageapi';
 import { DownDetector } from '.';
 import { StatusPage } from './Status';
 import { PresetStatus } from './preset';
 
 export class StatusManager extends Collection<string, StatusPage> {
+    private readonly logger = getLogger('StatusManager');
     private readonly instance: DownDetector;
 
     public constructor(instance: DownDetector) {
@@ -14,6 +16,7 @@ export class StatusManager extends Collection<string, StatusPage> {
     }
 
     public async init(): Promise<void> {
+        this.logger.info('Initializing');
         const status = await Status.find();
         await Promise.all(status.map(s => this.set(s.id, new StatusPage(s.id).on('statusUpdate', (base, incident) => this.onStatusChange(base, incident)))));
     }

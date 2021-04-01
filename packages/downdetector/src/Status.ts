@@ -1,6 +1,7 @@
 import { EventEmitter as Emitter } from 'events';
 import { Status } from 'database';
 import { Collection } from 'discord.js';
+import { getLogger, Logger } from 'log4js';
 import {
     IComponent,
     IIncident,
@@ -23,6 +24,7 @@ declare module 'events' {
 }
 
 export class StatusPage extends Emitter {
+    private readonly logger: Logger;
     public readonly id: string;
     public lastUpdate!: Date;
     public ongoingIncidents = false;
@@ -37,6 +39,7 @@ export class StatusPage extends Emitter {
 
     public constructor(id: string) {
         super();
+        this.logger = getLogger(id);
         this.id = id;
         this.api = new StatusPageApi(id);
     }
@@ -59,6 +62,7 @@ export class StatusPage extends Emitter {
     }
 
     private async update() {
+        this.logger.trace('Updating status....');
         this.lastUpdate = new Date;
         if (this.ongoingIncidents) {
             const res = await this.getUnresolvedIncidents();

@@ -15,8 +15,4 @@ export const PresetStatus = [
         id: 'zjttvm6ql9lp',
         name: 'Twitter',
     },
-    {
-        id: '5chbnpdk7hrf',
-        name: 'test',
-    },
 ] as const;

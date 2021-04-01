@@ -1,4 +1,5 @@
 import { Message, MessageEmbed, PermissionResolvable, Permissions, TextChannel } from 'discord.js';
+import { getLogger, Logger } from 'log4js';
 import { Base } from '.';
 import { Bot } from '..';
 
@@ -12,6 +13,8 @@ type CommandOptions = Readonly<{
 }>;
 
 export abstract class Command extends Base {
+    protected readonly logger: Logger;
+
     public readonly alias: string[];
     public readonly description: string;
     public readonly usage: string;
@@ -22,6 +25,7 @@ export abstract class Command extends Base {
     public constructor(bot: Bot, name: string, options: CommandOptions) {
         super(bot, name);
 
+        this.logger = getLogger(name);
         this.alias = options.alias ?? [];
         this.description = options.description;
         this.usage = options.usage;

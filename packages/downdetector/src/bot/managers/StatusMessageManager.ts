@@ -1,9 +1,12 @@
 import { Incident as DBIncident, Notify, Status } from 'database';
 import { MessageEmbed, TextChannel } from 'discord.js';
+import { getLogger } from 'log4js';
 import { IIncident, Incident, Indicator, Maintenance } from 'statuspageapi';
 import { Bot } from '..';
 
 export class StatusMessageManager {
+    private readonly logger = getLogger('StatusMessageManager');
+
     private readonly bot: Bot;
 
     public constructor(bot: Bot) {
@@ -31,7 +34,7 @@ export class StatusMessageManager {
                     return incidentCache.notified.push(await new Notify({ channel: message.channel.id, message: message.id }).save());
                 }
             } catch (e) {
-                return console.error(e);
+                return this.logger.error(e);
             }
         });
         if (todo) await Promise.all(todo);
