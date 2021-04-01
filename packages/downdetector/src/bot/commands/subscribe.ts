@@ -20,7 +20,7 @@ export default class extends Command {
     }
 
     public run(message: Message, args: string[]): undefined | Promise<void | Message> {
-        this.logger.trace('Running comand');
+        this.logger.trace('Running command');
         if (!args.length) return this.showSubscribed(message);
         if (args.length > 2) return message.channel.send('Too many arguments');
         const channel = args.length === 2 ? this.getChannelFromId(args[1]) : message.channel as TextChannel;

@@ -1,5 +1,5 @@
 import { Subscribe } from 'database';
-import { Structures } from 'discord.js';
+import { Guild as CGuild, Structures } from 'discord.js';
 
 declare module 'discord.js' {
     interface Guild {
@@ -7,8 +7,10 @@ declare module 'discord.js' {
     }
 }
 
-export default Structures.extend('Guild', Guild => class extends Guild {
+export class ExtendedGuild extends CGuild {
     public getSubscribed(): Promise<Subscribe[]> {
         return Subscribe.find({ relations: ['status'], where: { guild: this.id } });
     }
-});
+}
+
+export default Structures.extend('Guild', () => ExtendedGuild);
