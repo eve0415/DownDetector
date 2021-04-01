@@ -22,8 +22,7 @@
   },
   "scripts": {
     "lint": "npx eslint --ext ts --fix src/**/*",
-    "build": "tsc -b",
-    "watch": "tsc -w"
+    "clean": "rimraf lib && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "axios": "^0.21.1"

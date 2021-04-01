@@ -27,6 +27,8 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
         "target": "ESNext"
     },
     "exclude": [
@@ -41,5 +43,11 @@
         {
             "path": "./packages/downdetector"
         },
+        {
+            "path": "./packages/database"
+        },
+        {
+            "path": "./packages/statuspage"
+        }
     ]
 }

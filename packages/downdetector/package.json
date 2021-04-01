@@ -22,8 +22,7 @@
   },
   "scripts": {
     "lint": "npx eslint --ext ts --fix src/**/*",
-    "build": "tsc -b",
-    "watch": "tsc -w",
+    "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "start": "node -r dotenv/config dist/index.js",
     "test": "nodemon --config nodemon.json -r dotenv/config src/index.ts"
   },
