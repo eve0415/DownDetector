@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           git config --global url."https://${{ secrets.PAT }}@github.com/".insteadOf ssh://git@github.com/
-          yarn bootstrap
+          yarn install --frozen-lockfile
 
       - name: Build
         run: yarn build
