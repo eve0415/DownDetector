@@ -38,6 +38,6 @@ export class Bot extends Client {
     }
 
     public sendError(e: unknown): Promise<Message> {
-        return (this.channels.cache.get('827163688057569281') as TextChannel).send({ embed: { title: 'Error', description: e as string } });
+        return (this.channels.cache.get('827163688057569281') as TextChannel)?.send({ embed: { title: 'Error', description: e as string } });
     }
 }

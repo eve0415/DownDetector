@@ -41,12 +41,14 @@ export class DownDetector {
         ['SIGTERM', 'SIGINT', 'uncaughtException', 'unhandledRejection']
             .forEach(signal => process.on(signal, async e => {
                 if (e === 'unhandledRejection') {
-                    this.logger.error('Unexpected error occured', e);
+                    this.logger.error('Unexpected error occured');
+                    this.logger.error(e);
                     await this.bot.sendError(e);
                     return;
                 }
                 if (!(e === 'SIGINT' || e === 'SIGTERM')) {
-                    this.logger.fatal('Unexpected error occured', e);
+                    this.logger.fatal('Unexpected error occured');
+                    this.logger.fatal(e);
                     await this.bot.sendError(e);
                 }
                 this.shutdown();
