@@ -1,0 +1,4 @@
+node_modules
+.git
+database.*
+tsconfig.tsbuildinfo
