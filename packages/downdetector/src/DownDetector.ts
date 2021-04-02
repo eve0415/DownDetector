@@ -31,8 +31,9 @@ export class DownDetector {
         this.statusManager.postInit();
     }
 
-    private shutdown() {
+    private async shutdown() {
         this.logger.info('Shutting down system...');
+        await this.database.close();
         shutdown();
         process.exit();
     }
