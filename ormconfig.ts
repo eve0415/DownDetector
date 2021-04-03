@@ -1,9 +1,11 @@
-// const production = {
-//     type: 'postgres',
-//     url: process.env.DATABASE_URL,
-//     migrationsRun: true,
-//     synchronize: true,
-// };
+const production = {
+    type: 'postgres',
+    host: process.env.HOST,
+    username: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    migrationsRun: true,
+    synchronize: true,
+};
 
 const development = {
     type: 'better-sqlite3',
@@ -12,5 +14,4 @@ const development = {
     synchronize: true,
 };
 
-// export default process.env.NODE_ENV ? development : production;
-export default development;
+export default process.env.NODE_ENV ? development : production;
