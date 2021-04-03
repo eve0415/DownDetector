@@ -1,6 +1,6 @@
 const production = {
     type: 'postgres',
-    host: process.env.HOST,
+    host: process.env.DATABASE_SERVICE_HOST,
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     migrationsRun: true,
