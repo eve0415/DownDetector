@@ -57,8 +57,8 @@ export class StatusPage extends Emitter {
                 if (found) super.emit('statusUpdate', allIncidents, found);
             });
         }
-        // this.checkUpdate = setInterval(() => this.update(), 60000);
-        this.checkUpdate = setInterval(() => this.update(), 20000);
+        this.checkUpdate = setInterval(() => this.update(), 60000);
+        // this.checkUpdate = setInterval(() => this.update(), 20000);
     }
 
     private async update() {
