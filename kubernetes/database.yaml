@@ -62,10 +62,7 @@ spec:
                   name: postgres
                   key: password
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postgres
-                  key: user
+              value: database
           resources:
             limits:
               memory: "128Mi"
