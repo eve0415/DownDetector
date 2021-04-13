@@ -18,12 +18,12 @@ spec:
     spec:
       containers:
         - name: downdetector
-          image: eve0415/downdetector:latest
+          image: eve0415/downdetector
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "1G"
-              cpu: "1000m"
+              memory: 512M
+              cpu: 800m
           env:
             - name: DISCORD_TOKEN
               valueFrom:
