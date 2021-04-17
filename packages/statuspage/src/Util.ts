@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Page } from './interfaces';
+import { RSummary } from './interfaces';
 
 export class Util {
     public static async isValidId(id: string): Promise<boolean> {
@@ -14,7 +14,7 @@ export class Util {
     }
 
     public static async getServiceName(id: string): Promise<string> {
-        const result = await axios.get<Page>(`https://${id}.statuspage.io/api/v2/summary.json`);
-        return result.data.name;
+        const result = await axios.get<RSummary>(`https://${id}.statuspage.io/api/v2/summary.json`);
+        return result.data.page.name;
     }
 }

@@ -1,17 +1,17 @@
 import { IComponent, IIncident, IMaintenance, IStatus, Page, RPage } from '.';
 
 export interface RSummary extends RPage {
-    components: IComponent[];
-    incidents: IIncident[];
-    scheduled_maintenances: IMaintenance[];
-    status: IStatus;
+    readonly components: IComponent[];
+    readonly incidents: IIncident[];
+    readonly scheduled_maintenances: IMaintenance[];
+    readonly status: IStatus;
 }
 
 export class Summary extends Page {
-    components: IComponent[];
-    incidents: IIncident[];
-    scheduled_maintenances: IMaintenance[];
-    status: IStatus;
+    public readonly components: IComponent[];
+    public readonly incidents: IIncident[];
+    public readonly scheduled_maintenances: IMaintenance[];
+    public readonly status: IStatus;
 
     public constructor(data: RSummary) {
         super(data);
