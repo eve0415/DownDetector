@@ -24,12 +24,12 @@
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "pg": "^8.5.1",
+    "pg": "^8.6.0",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.32"
   },
   "devDependencies": {
-    "better-sqlite3": "^7.1.4",
+    "better-sqlite3": "^7.1.5",
     "discord.js": "discordjs/discord.js#master"
   }
 }
