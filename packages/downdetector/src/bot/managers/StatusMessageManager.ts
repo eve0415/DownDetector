@@ -67,7 +67,7 @@ export class StatusMessageManager {
                         ? incident.components.map(com => com.description ? com.description : 'No description.').join('\n')
                         : humanReadableString(c.status.toString())}`).join('\n')
                     : 'None'}`)
-            .setTimestamp(updates[updates.length - 1].created_at);
+            .setTimestamp(incident.resolved_at ?? updates[updates.length - 1].created_at);
 
         if (['resolved', 'completed'].includes(incident.status.toString())) {
             embed.setColor('GREEN');
