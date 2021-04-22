@@ -2,6 +2,7 @@ import { Incident as DBIncident, Notify, Status } from 'database';
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { getLogger } from 'log4js';
 import { IIncident, IMaintenance, Incident, Indicator, Maintenance } from 'statuspageapi';
+import turndown from 'turndown';
 import { Bot } from '..';
 
 export class StatusMessageManager {
@@ -80,7 +81,7 @@ export class StatusMessageManager {
         updates.reverse().length = 25;
         embed.addFields(updates.map(i => ({
             name: humanReadableString(i.status.toString()),
-            value: i.body,
+            value: new turndown().turndown(i.body),
         })));
 
         return embed;
