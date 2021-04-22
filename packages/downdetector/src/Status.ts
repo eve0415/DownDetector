@@ -13,7 +13,7 @@ import {
 } from 'statuspageapi';
 
 interface StatusEvents {
-    'statusUpdate': [Incident | Maintenance, IIncident]
+    'statusUpdate': [Incident | Maintenance, IIncident | IMaintenance]
 }
 
 declare module 'events' {

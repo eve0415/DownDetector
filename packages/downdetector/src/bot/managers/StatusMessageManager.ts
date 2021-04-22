@@ -1,19 +1,18 @@
 import { Incident as DBIncident, Notify, Status } from 'database';
 import { MessageEmbed, TextChannel } from 'discord.js';
 import { getLogger } from 'log4js';
-import { IIncident, Incident, Indicator, Maintenance } from 'statuspageapi';
+import { IIncident, IMaintenance, Incident, Indicator, Maintenance } from 'statuspageapi';
 import { Bot } from '..';
 
 export class StatusMessageManager {
     private readonly logger = getLogger('StatusMessageManager');
-
     private readonly bot: Bot;
 
     public constructor(bot: Bot) {
         this.bot = bot;
     }
 
-    public async updateStatus(base: Incident | Maintenance, incident: IIncident): Promise<void> {
+    public async updateStatus(base: Incident | Maintenance, incident: IIncident | IMaintenance): Promise<void> {
         const DBStatus = await Status.findOne({ id: base.id });
         const incidentCache = DBStatus?.incidents.find(i => i.id === incident.id) ?? await new DBIncident({ id: incident.id }).save();
         const compatChannel = DBStatus?.subscribed.map(s => this.bot.channels.resolve(s.channel));
@@ -49,7 +48,7 @@ export class StatusMessageManager {
         await DBStatus?.save();
     }
 
-    private createStatusMessage(base: Incident | Maintenance, incident: IIncident) {
+    private createStatusMessage(base: Incident | Maintenance, incident: IIncident | IMaintenance) {
         const updates = [...incident.incident_updates];
         const embed = new MessageEmbed()
             .setAuthor(base.name, '', base.url)
@@ -60,14 +59,19 @@ export class StatusMessageManager {
                 ? humanReadableString(incident.status.toString())
                 : updates.length === 1
                     ? 'Started'
-                    : 'Updated'} at`)
+                    : 'Updated'} ${incident.status.toString() === 'scheduled' ? 'for' : 'at'}`)
             .setDescription(
                 `**__Affected Components__**\n${incident.components.length
                     ? incident.components.map(c => `**${c.name}** - ${['resolved', 'scheduled', 'completed'].includes(incident.status.toString())
                         ? incident.components.map(com => com.description ? com.description : 'No description.').join('\n')
                         : humanReadableString(c.status.toString())}`).join('\n')
-                    : 'None'}`)
-            .setTimestamp(incident.resolved_at ?? updates[updates.length - 1].created_at);
+                    : 'None'}`);
+
+        if (incident.status === 'scheduled' && incident instanceof IMaintenance) {
+            embed.setTimestamp(incident.scheduled_for);
+        } else {
+            embed.setTimestamp(incident.resolved_at ?? updates[updates.length - 1].created_at);
+        }
 
         if (['resolved', 'completed'].includes(incident.status.toString())) {
             embed.setColor('GREEN');
